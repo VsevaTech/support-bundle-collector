@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Incidents{% endblock %}
+{% block nav %}
+<nav><a href="/support">Links</a><a href="/support/incidents" class="active">Incidents</a></nav>
+{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Incidents</h1>
+  {% if incidents %}
+  <table>
+    <thead><tr><th>#</th><th>Submitted (UTC)</th><th>Browser</th><th>OS</th><th>Problem</th><th>Screenshot</th></tr></thead>
+    <tbody>
+    {% for i in incidents %}
+      <tr>
+        <td><a href="/support/incidents/{{ i.id }}">#{{ i.id }}</a></td>
+        <td>{{ i.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+        <td>{{ i.browser }}</td>
+        <td>{{ i.os }}</td>
+        <td class="ellipsis">{{ i.description[:90] }}{% if i.description|length > 90 %}…{% endif %}</td>
+        <td>{{ "yes" if i.screenshot_path else "—" }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">No incidents yet.</p>{% endif %}
+</section>
+{% endblock %}

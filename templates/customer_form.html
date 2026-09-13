@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Report a problem{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Report a problem</h1>
+  <p class="muted">This form sends the support team a description of the issue, an optional screenshot and a few
+    technical details about your browser. <strong>Everything that will be sent is shown below.</strong></p>
+
+  {% if error %}<div class="notice error">{{ error }}</div>{% endif %}
+
+  <form method="post" action="/s/{{ link.token }}" enctype="multipart/form-data" id="incident-form" novalidate>
+    <label>What went wrong? <span class="req">*</span>
+      <textarea name="description" rows="6" maxlength="5000" required
+        placeholder="e.g. Payment button does nothing after I enter the card number.">{{ form.description or "" }}</textarea>
+    </label>
+
+    <label>Screenshot (PNG/JPEG/GIF/WebP, up to {{ max_upload_mb }} MB)
+      <input type="file" name="screenshot" accept="image/png,image/jpeg,image/gif,image/webp">
+    </label>
+    <div id="preview" class="preview" hidden><img alt="Screenshot preview" id="preview-img"></div>
+
+    <fieldset class="diag">
+      <legend>Technical details that will be sent</legend>
+      <table class="kv">
+        <tr><th>Browser</th><td data-field="browser">detecting…</td></tr>
+        <tr><th>OS</th><td data-field="os">detecting…</td></tr>
+        <tr><th>Viewport</th><td data-field="viewport">detecting…</td></tr>
+        <tr><th>Timezone</th><td data-field="timezone">detecting…</td></tr>
+        <tr><th>Language</th><td data-field="language">detecting…</td></tr>
+      </table>
+      <input type="hidden" name="browser">
+      <input type="hidden" name="os">
+      <input type="hidden" name="viewport">
+      <input type="hidden" name="timezone">
+      <input type="hidden" name="language">
+
+      <label class="check">
+        <input type="checkbox" name="share_url" id="share_url">
+        Also share the page address where the problem happened
+      </label>
+      <label id="url-row" hidden>Page URL (edit if needed)
+        <input type="url" name="page_url" id="page_url" maxlength="2048" placeholder="https://…">
+      </label>
+      <p class="muted small">Not collected: cookies, saved passwords, login tokens, site storage, browsing history.</p>
+    </fieldset>
+
+    <button type="submit" class="primary">Send to support</button>
+  </form>
+</section>
+{% endblock %}
+{% block scripts %}<script src="/static/collect.js"></script>{% endblock %}

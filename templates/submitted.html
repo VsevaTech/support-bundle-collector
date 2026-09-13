@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Thank you{% endblock %}
+{% block content %}
+<section class="card center">
+  <h1>Thank you!</h1>
+  <p>Your report has been sent to the support team. Reference: <strong>Incident #{{ incident.id }}</strong>.</p>
+  <p class="muted">This link can no longer be used.</p>
+</section>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Link unavailable{% endblock %}
+{% block content %}
+<section class="card center">
+  {% if reason == "expired" %}
+    <h1>This link has expired</h1>
+    <p>Please ask the support team for a new link.</p>
+  {% elif reason == "used" %}
+    <h1>This link was already used</h1>
+    <p>Your report has been received. If you need to add something, ask support for a new link.</p>
+  {% else %}
+    <h1>Link not found</h1>
+    <p>Check the address or ask the support team for a new link.</p>
+  {% endif %}
+</section>
+{% endblock %}

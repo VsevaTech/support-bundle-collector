@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Create support link{% endblock %}
+{% block head %}<meta name="htmx-config" content='{"includeIndicatorStyles": false}'>{% endblock %}
+{% block nav %}
+<nav><a href="/support" class="active">Links</a><a href="/support/incidents">Incidents</a></nav>
+{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Create support link</h1>
+  <p class="muted">Generate a one-time link, send it to the customer. The link expires after the TTL or after the first submission.</p>
+  <form hx-post="/support/links" hx-target="#result" hx-swap="innerHTML" method="post" action="/support/links" class="row">
+    <label>TTL
+      <select name="ttl_hours">
+        <option value="1">1h</option>
+        <option value="4">4h</option>
+        <option value="24" selected>24h</option>
+        <option value="72">72h</option>
+        <option value="168">7 days</option>
+      </select>
+    </label>
+    <label class="grow">Internal note (optional)
+      <input type="text" name="note" maxlength="200" placeholder="e.g. ticket #4821, ACME Ltd">
+    </label>
+    <button type="submit" class="primary">Create link</button>
+  </form>
+  <div id="result"></div>
+</section>
+
+<section class="card">
+  <h2>Recent links</h2>
+  {% if links %}
+  <table>
+    <thead><tr><th>#</th><th>Status</th><th>Note</th><th>Created (UTC)</th><th>Expires (UTC)</th><th>Incident</th></tr></thead>
+    <tbody>
+    {% for l in links %}
+      <tr>
+        <td>{{ l.id }}</td>
+        <td><span class="badge {{ l.status }}">{{ l.status }}</span></td>
+        <td>{{ l.note or "—" }}</td>
+        <td>{{ l.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+        <td>{{ l.expires_at.strftime("%Y-%m-%d %H:%M") }}</td>
+        <td>
+          {% if l.incident %}<a href="/support/incidents/{{ l.incident.id }}">#{{ l.incident.id }}</a>
+          {% elif l.status == "active" %}<code class="small">{{ link_url(l.token) }}</code>
+          {% else %}—{% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">No links yet.</p>{% endif %}
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.4/dist/htmx.min.js"
+        integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
+        crossorigin="anonymous"></script>
+<script src="/static/support.js"></script>
+{% endblock %}

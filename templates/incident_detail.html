@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Incident #{{ incident.id }}{% endblock %}
+{% block nav %}
+<nav><a href="/support">Links</a><a href="/support/incidents" class="active">Incidents</a></nav>
+{% endblock %}
+{% block content %}
+<section class="card">
+  <div class="row between">
+    <h1>Incident #{{ incident.id }}</h1>
+    <a class="button secondary" href="/support/incidents/{{ incident.id }}.txt">Download .txt</a>
+  </div>
+  <p class="muted">Submitted {{ incident.created_at.strftime("%Y-%m-%d %H:%M:%S") }} UTC
+    via link #{{ incident.link.id }}{% if incident.link.note %} · {{ incident.link.note }}{% endif %}</p>
+
+  <table class="kv">
+    <tr><th>Browser</th><td>{{ incident.browser or "—" }}</td></tr>
+    <tr><th>OS</th><td>{{ incident.os or "—" }}</td></tr>
+    <tr><th>Viewport</th><td>{{ incident.viewport or "—" }}</td></tr>
+    <tr><th>Timezone</th><td>{{ incident.timezone or "—" }}</td></tr>
+    <tr><th>Language</th><td>{{ incident.language or "—" }}</td></tr>
+    <tr><th>URL</th><td>{% if incident.page_url %}<code>{{ incident.page_url }}</code>{% else %}<span class="muted">not shared</span>{% endif %}</td></tr>
+    <tr><th>User-Agent</th><td><code class="small">{{ incident.user_agent or "—" }}</code></td></tr>
+  </table>
+
+  <h2>Problem</h2>
+  <pre class="problem">{{ incident.description }}</pre>
+
+  <h2>Attachment</h2>
+  {% if incident.screenshot_path %}
+    <p><a href="/support/incidents/{{ incident.id }}/screenshot" target="_blank">{{ incident.screenshot_name }}</a></p>
+    <a href="/support/incidents/{{ incident.id }}/screenshot" target="_blank">
+      <img class="shot" src="/support/incidents/{{ incident.id }}/screenshot" alt="Screenshot">
+    </a>
+  {% else %}<p class="muted">No screenshot attached.</p>{% endif %}
+
+  <details>
+    <summary>Plain-text bundle</summary>
+    <pre class="bundle">{{ bundle_text }}</pre>
+  </details>
+</section>
+{% endblock %}

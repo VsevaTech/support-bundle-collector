@@ -1,0 +1,7 @@
+<div class="notice success" id="link-created">
+  <strong>Link #{{ link.id }} created.</strong> Valid until {{ link.expires_at.strftime("%Y-%m-%d %H:%M") }} UTC, single use.
+  <div class="copyrow">
+    <input type="text" readonly value="{{ url }}" id="link-url" data-select-on-click>
+    <button type="button" class="secondary" data-copy="#link-url">Copy</button>
+  </div>
+</div>
