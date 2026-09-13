@@ -1,0 +1,1 @@
+"""Support Bundle Collector."""
