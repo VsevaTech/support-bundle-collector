@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint-test:
+    name: ruff + pytest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check .
+      - run: ruff format --check .
+      - run: pytest
+
+  docker:
+    name: docker compose up --build + smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and start
+        run: docker compose up --build -d
+      - name: Wait for healthy
+        run: |
+          for i in $(seq 1 30); do
+            status=$(docker inspect -f '{{.State.Health.Status}}' "$(docker compose ps -q app)")
+            [ "$status" = "healthy" ] && exit 0
+            sleep 2
+          done
+          docker compose logs app
+          exit 1
+      - name: Smoke test (create link -> open -> submit -> read incident)
+        run: |
+          set -eux
+          curl -fsS localhost:8000/healthz
+          URL=$(curl -fsS -H "HX-Request: true" -d "ttl_hours=1&note=ci" localhost:8000/support/links | grep -o 'http://[^"]*/s/[A-Za-z0-9_-]*')
+          curl -fsS -o /dev/null "$URL"
+          curl -fsS -o /dev/null -F description="CI smoke" -F browser="Chrome 128" -F os="Windows 11" \
+               -F viewport=1920x1080 -F timezone=Europe/Berlin -F language=en-US "$URL"
+          # one-time: second open must be 410
+          test "$(curl -s -o /dev/null -w '%{http_code}' "$URL")" = "410"
+          curl -fsS localhost:8000/support/incidents/1.txt | tee /dev/stderr | grep -q "Browser: Chrome 128"
+      - name: Container runs as non-root
+        run: test "$(docker compose exec -T app id -u)" = "10001"
+      - run: docker compose down -v
+        if: always()
+
+  e2e:
+    name: browser demo flow (Playwright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: pip install -r requirements-dev.txt playwright
+      - run: playwright install --with-deps chromium
+      - name: Start app
+        run: |
+          uvicorn app.main:app --host 127.0.0.1 --port 8000 &
+          for i in $(seq 1 20); do curl -fsS localhost:8000/healthz && break; sleep 1; done
+      - run: python tests/e2e/demo_flow.py http://127.0.0.1:8000 e2e-artifacts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-screenshots
+          path: e2e-artifacts/*.png

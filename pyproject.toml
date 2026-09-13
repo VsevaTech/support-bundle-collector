@@ -1,0 +1,35 @@
+[project]
+name = "support-bundle-collector"
+version = "0.1.0"
+description = "One-time support links that collect a structured incident bundle (safe browser diagnostics + description + screenshot)."
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "sqlalchemy>=2.0",
+    "jinja2>=3.1",
+    "python-multipart>=0.0.9",
+    "pydantic-settings>=2.3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "httpx>=0.27", "ruff>=0.5"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["."]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "W", "N", "S"]
+ignore = ["S101", "B008"]  # assert in tests; Depends() in defaults is FastAPI idiom
+
+[tool.ruff.lint.isort]
+known-first-party = ["app", "tests"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S105", "S106", "S108"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

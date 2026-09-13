@@ -1,0 +1,21 @@
+services:
+  app:
+    build:
+      context: .
+      args:
+        BASE_IMAGE: ${SBC_BASE_IMAGE:-python:3.12-slim}
+    image: support-bundle-collector:local
+    ports:
+      - "${SBC_PORT:-8000}:8000"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      SBC_DATABASE_URL: sqlite:////data/sbc.db
+      SBC_UPLOAD_DIR: /data/uploads
+    volumes:
+      - sbc-data:/data
+    restart: unless-stopped
+
+volumes:
+  sbc-data:
